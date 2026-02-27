@@ -1,9 +1,10 @@
 import { createClient } from "@/utils/supabase/server";
-import { Copy, CheckCircle2, Trash2, KeyRound, AlertCircle } from "lucide-react";
-import { addApiKey, deleteApiKey } from "./actions";
+import { Copy, CheckCircle2, Trash2, KeyRound, AlertCircle, RotateCcw, Zap } from "lucide-react";
+import { addApiKey, deleteApiKey, resetAllKeys, reactivateApiKey } from "./actions";
 import { AddKeyForm } from "./add-key-form";
 import { DeleteKeyButton } from "./delete-key-button";
 import { EditKeyButton } from "./edit-key-button";
+import { Button } from "@/components/ui/button";
 
 export default async function ApiKeysPage() {
     const supabase = await createClient();
@@ -23,13 +24,28 @@ export default async function ApiKeysPage() {
     return (
         <div className="flex flex-col gap-8 max-w-4xl mx-auto">
             <div className="flex flex-col gap-2">
-                <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
-                    <KeyRound className="h-8 w-8 text-primary" />
-                    Kelola API Keys
-                </h2>
+                <div className="flex justify-between items-start">
+                    <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
+                        <KeyRound className="h-8 w-8 text-primary" />
+                        Kelola API Keys
+                    </h2>
+
+                    {keys.some(k => k.status === 'exhausted') && (
+                        <form action={resetAllKeys}>
+                            <Button variant="outline" className="gap-2 border-primary/30 text-primary hover:bg-primary/10">
+                                <RotateCcw className="h-4 w-4" />
+                                Reset Semua Status (Re-activate)
+                            </Button>
+                        </form>
+                    )}
+                </div>
                 <p className="text-muted-foreground mt-2">
                     Tambahkan API Key Google Gemini (gratis) Anda di sini. Sistem akan otomatis menggunakan API Key yang aktif dan beralih ke kunci berikutnya jika satu kunci mencapai batas kuota (Exhausted).
                 </p>
+                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs text-blue-500 flex items-center gap-2 mt-2">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span><b>Tips:</b> API Gratis Gemini memiliki limit 15 permintaan per menit. Jika status berubah menjadi 'Exhausted', Anda dapat menekan tombol Reset untuk menggunakannya kembali setelah menunggu 1 menit.</span>
+                </div>
             </div>
 
             {/* Add New Key Form (Client Component) */}
@@ -57,17 +73,21 @@ export default async function ApiKeysPage() {
                                             Active
                                         </span>
                                     ) : (
-                                        <span className="flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded">
-                                            <AlertCircle className="h-3 w-3" />
-                                            Exhausted (Limit)
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded">
+                                                <AlertCircle className="h-3 w-3" />
+                                                Exhausted (Limit)
+                                            </span>
+                                            <form action={reactivateApiKey.bind(null, k.id)}>
+                                                <button type="submit" className="text-[10px] text-primary hover:underline flex items-center gap-1 font-bold">
+                                                    <Zap className="h-3 w-3" /> Aktifkan Lagi
+                                                </button>
+                                            </form>
+                                        </div>
                                     )}
                                 </div>
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground font-mono mt-1">
                                     {k.key_value.substring(0, 10)}...{k.key_value.substring(k.key_value.length - 4)}
-                                    <button className="text-muted-foreground hover:text-foreground">
-                                        <Copy className="h-3 w-3" />
-                                    </button>
                                 </div>
                             </div>
 

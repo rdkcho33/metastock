@@ -140,3 +140,38 @@ export async function markKeyExhausted(id: string) {
         return { error: err.message }
     }
 }
+
+export async function reactivateApiKey(id: string) {
+    try {
+        const supabase = await createClient()
+        const { error: dbError } = await supabase
+            .from('api_keys')
+            .update({ status: 'active' })
+            .eq('id', id)
+
+        if (dbError) throw dbError
+        revalidatePath('/dashboard/keys')
+        return { success: true }
+    } catch (err: any) {
+        return { error: err.message }
+    }
+}
+
+export async function resetAllKeys() {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return { error: 'Unauthorized' }
+
+        const { error: dbError } = await supabase
+            .from('api_keys')
+            .update({ status: 'active' })
+            .eq('user_id', user.id)
+
+        if (dbError) throw dbError
+        revalidatePath('/dashboard/keys')
+        return { success: true }
+    } catch (err: any) {
+        return { error: err.message }
+    }
+}

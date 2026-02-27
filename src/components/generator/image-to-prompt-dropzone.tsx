@@ -122,7 +122,7 @@ export function ImageToPromptDropzone({
 
                     currentKeyIndex++;
                     if (currentKeyIndex >= activeKeys.length) {
-                        alert("Semua API Key telah mencapai limit (429)! Silakan tambahkan API Key baru.");
+                        alert("Semua API Key yang aktif saat ini telah mencapai limit (429).\n\nTips: API gratis biasanya memiliki limit per menit. Silakan tunggu 1-2 menit, lalu klik 'Reset Semua Status' di menu Kelola API Keys untuk mencoba kembali.");
                         setIsProcessing(false);
                         return;
                     }
