@@ -6,7 +6,7 @@ export interface GeminiResponse {
 }
 
 export class GeminiService {
-    private static readonly ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    private static readonly ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
     /**
      * Mengirim gambar (base64) ke Gemini API
