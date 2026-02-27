@@ -141,7 +141,7 @@ export async function markKeyExhausted(id: string) {
     }
 }
 
-export async function reactivateApiKey(id: string, formData: FormData) {
+export async function reactivateApiKey(id: string, formData: FormData): Promise<void> {
     try {
         const supabase = await createClient()
         const { error: dbError } = await supabase
@@ -151,17 +151,16 @@ export async function reactivateApiKey(id: string, formData: FormData) {
 
         if (dbError) throw dbError
         revalidatePath('/dashboard/keys')
-        return { success: true }
     } catch (err: any) {
-        return { error: err.message }
+        console.error('Error reactivating key:', err)
     }
 }
 
-export async function resetAllKeys(formData: FormData) {
+export async function resetAllKeys(formData: FormData): Promise<void> {
     try {
         const supabase = await createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return { error: 'Unauthorized' }
+        if (!user) return
 
         const { error: dbError } = await supabase
             .from('api_keys')
@@ -170,8 +169,7 @@ export async function resetAllKeys(formData: FormData) {
 
         if (dbError) throw dbError
         revalidatePath('/dashboard/keys')
-        return { success: true }
     } catch (err: any) {
-        return { error: err.message }
+        console.error('Error resetting keys:', err)
     }
 }
