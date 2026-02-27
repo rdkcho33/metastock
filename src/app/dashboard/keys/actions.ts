@@ -141,7 +141,7 @@ export async function markKeyExhausted(id: string) {
     }
 }
 
-export async function reactivateApiKey(id: string) {
+export async function reactivateApiKey(id: string, formData: FormData) {
     try {
         const supabase = await createClient()
         const { error: dbError } = await supabase
@@ -157,7 +157,7 @@ export async function reactivateApiKey(id: string) {
     }
 }
 
-export async function resetAllKeys() {
+export async function resetAllKeys(formData: FormData) {
     try {
         const supabase = await createClient()
         const { data: { user } } = await supabase.auth.getUser()
