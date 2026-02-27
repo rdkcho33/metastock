@@ -19,6 +19,7 @@ export default async function ImageToPromptPage() {
 
     // Formatting list agar sesuai dengan Dropzone expectations
     const formattedKeys = (keysData || []).map(k => ({
+        id: k.id,
         key: k.key_value,
         status: k.status,
         provider: k.provider

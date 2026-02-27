@@ -78,3 +78,65 @@ export async function deleteApiKey(id: string) {
         return { error: err.message }
     }
 }
+
+export async function updateApiKey(id: string, formData: FormData) {
+    try {
+        const supabase = await createClient()
+        const { data, error: authError } = await supabase.auth.getUser()
+        const user = data?.user
+
+        if (!user || authError) {
+            return { error: 'Sesi anda telah berakhir. Silakan login kembali.' }
+        }
+
+        const name = formData.get('name') as string
+        const raw_key = formData.get('key_value') as string
+        const key_value = raw_key?.trim()
+
+        if (!key_value) {
+            return { error: 'Nilai Kunci wajib diisi.' }
+        }
+
+        const { error: dbError } = await supabase
+            .from('api_keys')
+            .update({
+                name: name || undefined,
+                key_value,
+                status: 'active' // Reset status to active if updated
+            })
+            .eq('id', id)
+            .eq('user_id', user.id)
+
+        if (dbError) {
+            console.error('Error updating key:', dbError)
+            return { error: dbError.message }
+        }
+
+        revalidatePath('/dashboard/keys')
+        return { success: true }
+    } catch (err: any) {
+        console.error('Unhandled Update Action Error:', err)
+        return { error: err.message }
+    }
+}
+
+export async function markKeyExhausted(id: string) {
+    try {
+        const supabase = await createClient()
+        const { error: dbError } = await supabase
+            .from('api_keys')
+            .update({ status: 'exhausted' })
+            .eq('id', id)
+
+        if (dbError) {
+            console.error('Error marking key exhausted:', dbError)
+            return { error: dbError.message }
+        }
+
+        revalidatePath('/dashboard/keys')
+        return { success: true }
+    } catch (err: any) {
+        console.error('Unhandled Mark Exhausted Error:', err)
+        return { error: err.message }
+    }
+}

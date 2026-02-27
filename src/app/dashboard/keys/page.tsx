@@ -1,8 +1,9 @@
 import { createClient } from "@/utils/supabase/server";
 import { Copy, CheckCircle2, Trash2, KeyRound, AlertCircle } from "lucide-react";
 import { addApiKey, deleteApiKey } from "./actions";
-import { AddKeyForm } from "./add-key-form"; // Client Component untuk Form Submit
+import { AddKeyForm } from "./add-key-form";
 import { DeleteKeyButton } from "./delete-key-button";
+import { EditKeyButton } from "./edit-key-button";
 
 export default async function ApiKeysPage() {
     const supabase = await createClient();
@@ -76,7 +77,14 @@ export default async function ApiKeysPage() {
                                     <span className="font-medium text-foreground">{k.usage_count || 0}</span>
                                 </div>
                                 <div className="h-10 w-px bg-border/50 hidden sm:block"></div>
-                                <DeleteKeyButton id={k.id} />
+                                <div className="flex items-center gap-2">
+                                    <EditKeyButton
+                                        id={k.id}
+                                        initialName={k.name}
+                                        initialKey={k.key_value}
+                                    />
+                                    <DeleteKeyButton id={k.id} />
+                                </div>
                             </div>
                         </div>
                     ))}

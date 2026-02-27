@@ -19,6 +19,7 @@ export default async function MetadataMicrostockPage() {
 
     // Formatting format property Dropzone lama (penyesuaian array object)
     const formattedKeys = (keysData || []).map(k => ({
+        id: k.id,
         key: k.key_value,
         status: k.status,
         provider: k.provider

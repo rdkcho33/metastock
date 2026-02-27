@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { resizeImageFile } from "@/lib/image-helper";
 import { GeminiService } from "@/lib/gemini-service";
 import { GroqService } from "@/lib/groq-service";
+import { markKeyExhausted } from "@/app/dashboard/keys/actions";
 
 export interface PromptProcessingFile {
     id: string;
@@ -21,7 +22,7 @@ export interface PromptProcessingFile {
 export function ImageToPromptDropzone({
     initialApiKeys = []
 }: {
-    initialApiKeys?: { key: string, status: string, provider: string }[]
+    initialApiKeys?: { id: string, key: string, status: string, provider: string }[]
 }) {
     const [files, setFiles] = useState<PromptProcessingFile[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -114,7 +115,11 @@ export function ImageToPromptDropzone({
                 if (result.success) {
                     attemptSuccessful = true;
                 } else if (result.error === "QUOTA_EXCEEDED") {
-                    console.warn(`Key index ${currentKeyIndex} exhausted. Trying next key...`);
+                    console.warn(`Key index ${currentKeyIndex} exhausted. Marking in DB and trying next key...`);
+
+                    // Mark key as exhausted in DB so it won't be picked up on next page refresh
+                    await markKeyExhausted(currentKey.id);
+
                     currentKeyIndex++;
                     if (currentKeyIndex >= activeKeys.length) {
                         alert("Semua API Key telah mencapai limit (429)! Silakan tambahkan API Key baru.");
