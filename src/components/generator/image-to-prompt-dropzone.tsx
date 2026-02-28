@@ -361,14 +361,64 @@ export function ImageToPromptDropzone({
                                     {item.prompt && (
                                         <div className="relative group/edit flex-1">
                                             {!item.isEditing ? (
-                                                <div className="flex flex-col gap-2 pr-12 relative">
-                                                    <div className="p-4 bg-background/50 border border-border/50 rounded-xl text-[13px] text-foreground/90 leading-relaxed font-mono shadow-inner group-hover/edit:border-blue-500/30 transition-all">
-                                                        <FileText className="h-4 w-4 inline-block mr-3 text-blue-500/50" />
-                                                        {item.prompt}
+                                                <div className="relative">
+                                                    <div
+                                                        className={[
+                                                            "relative overflow-hidden rounded-2xl border",
+                                                            "border-border/60 group-hover:border-blue-500/30",
+                                                            "bg-gradient-to-b from-background/80 to-background/40",
+                                                            "dark:from-background/40 dark:to-background/20",
+                                                            "shadow-inner",
+                                                            "transition-all",
+                                                        ].join(" ")}
+                                                    >
+                                                        {/* Header mini */}
+                                                        <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-muted/20">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
+                                                                    <FileText className="h-4 w-4" />
+                                                                </span>
+                                                                <div className="leading-tight">
+                                                                    <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                                                                        Generated Prompt
+                                                                    </p>
+                                                                    <p className="text-[11px] text-muted-foreground/80">
+                                                                        Klik icon pensil untuk edit
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Actions */}
+                                                            <button
+                                                                onClick={() => toggleEdit(item.id)}
+                                                                className={[
+                                                                    "inline-flex items-center gap-2",
+                                                                    "px-3 py-1.5 rounded-xl",
+                                                                    "text-[12px] font-bold",
+                                                                    "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+                                                                    "border border-blue-500/20",
+                                                                    "hover:bg-blue-500/15 hover:border-blue-500/30",
+                                                                    "transition-all",
+                                                                ].join(" ")}
+                                                            >
+                                                                <Edit2 className="h-4 w-4" />
+                                                                Edit
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Body prompt */}
+                                                        <div className="px-4 py-4">
+                                                            <div
+                                                                className={[
+                                                                    "font-mono text-[13px] leading-relaxed whitespace-pre-wrap",
+                                                                    "text-foreground",
+                                                                    "selection:bg-blue-500/20",
+                                                                ].join(" ")}
+                                                            >
+                                                                {item.prompt}
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <button onClick={() => toggleEdit(item.id)} className="absolute top-3 right-3 p-2 bg-muted/50 rounded-lg text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 transition-all opacity-0 group-hover/edit:opacity-100 shadow-sm border border-border/50">
-                                                        <Edit2 className="h-4 w-4" />
-                                                    </button>
                                                 </div>
                                             ) : (
                                                 <div className="flex flex-col gap-3 bg-background/80 p-5 rounded-xl border-2 border-blue-500/30 shadow-2xl animate-in zoom-in-95 duration-200">
