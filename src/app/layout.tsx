@@ -14,9 +14,8 @@ export default function RootLayout({
     return (
         <html lang="en" className="dark">
             <body>
-                <div className="relative min-h-screen bg-background flex flex-col items-center">
-                    {/* Ambient Background Glow Effect */}
-                    <div className="absolute top-0 opacity-40 z-[-1] min-h-screen w-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"></div>
+                <div className="relative min-h-screen bg-background flex flex-col items-center w-full">
+                    {/* Clean Dark background - no distracting glows */}
                     {children}
                 </div>
             </body>
