@@ -71,11 +71,17 @@ KATEGORI ADOBE STOCK:
             });
 
             if (response.status === 429) {
-                throw new Error("QUOTA_EXCEEDED");
+                const errorData = await response.json().catch(() => ({}));
+                const message = errorData.error?.message || "";
+                if (message.toLowerCase().includes("quota") || message.toLowerCase().includes("exhausted") || message.toLowerCase().includes("limit reached")) {
+                    throw new Error("QUOTA_EXCEEDED");
+                }
+                throw new Error("RATE_LIMIT_REACHED");
             }
 
             if (!response.ok) {
-                throw new Error(`Groq API Error: ${response.status} ${response.statusText}`);
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(`Groq API Error: ${response.status} ${errorData.error?.message || response.statusText}`);
             }
 
             const data = await response.json();
@@ -149,11 +155,17 @@ Maksimum 100 kata.`;
             });
 
             if (response.status === 429) {
-                throw new Error("QUOTA_EXCEEDED");
+                const errorData = await response.json().catch(() => ({}));
+                const message = errorData.error?.message || "";
+                if (message.toLowerCase().includes("quota") || message.toLowerCase().includes("exhausted") || message.toLowerCase().includes("limit reached")) {
+                    throw new Error("QUOTA_EXCEEDED");
+                }
+                throw new Error("RATE_LIMIT_REACHED");
             }
 
             if (!response.ok) {
-                throw new Error(`Groq API Error: ${response.status} ${response.statusText}`);
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(`Groq API Error: ${response.status} ${errorData.error?.message || response.statusText}`);
             }
 
             const data = await response.json();

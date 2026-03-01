@@ -107,6 +107,8 @@ export function ImageToPromptDropzone({
 
         for (const fileObj of pendingFiles) {
             let attemptSuccessful = false;
+            let retryCount = 0;
+            const maxRetries = 2;
 
             while (!attemptSuccessful && currentKeyIndex < activeKeys.length) {
                 const currentKey = activeKeys[currentKeyIndex];
@@ -114,15 +116,23 @@ export function ImageToPromptDropzone({
 
                 if (result.success) {
                     attemptSuccessful = true;
-                } else if (result.error === "QUOTA_EXCEEDED") {
-                    console.warn(`Key index ${currentKeyIndex} exhausted. Marking in DB and trying next key...`);
+                } else if (result.error === "RATE_LIMIT_REACHED" && retryCount < maxRetries) {
+                    retryCount++;
+                    const delay = retryCount * 3000;
+                    console.warn(`Rate limit hit for key ${currentKey.id}. Retrying in ${delay / 1000}s... (Attempt ${retryCount}/${maxRetries})`);
+                    await new Promise(r => setTimeout(r, delay));
+                } else if (result.error === "QUOTA_EXCEEDED" || (result.error === "RATE_LIMIT_REACHED" && retryCount >= maxRetries)) {
+                    const reason = result.error === "QUOTA_EXCEEDED" ? "Quota Exceeded" : "Rate Limit Persists";
+                    console.warn(`Key index ${currentKeyIndex} exhausted (${reason}). Marking in DB and trying next key...`);
 
                     // Mark key as exhausted in DB so it won't be picked up on next page refresh
                     await markKeyExhausted(currentKey.id);
 
                     currentKeyIndex++;
+                    retryCount = 0;
+
                     if (currentKeyIndex >= activeKeys.length) {
-                        alert("Semua API Key yang aktif saat ini telah mencapai limit (429).\n\nTips: API gratis biasanya memiliki limit per menit. Silakan tunggu 1-2 menit, lalu klik 'Reset Semua Status' di menu Kelola API Keys untuk mencoba kembali.");
+                        alert("Semua API Key yang aktif saat ini telah mencapai limit atau kuota habis.\n\nTips: Silakan tunggu beberapa menit, lalu klik 'Reset Semua Status' di menu Kelola API Keys untuk mencoba kembali.");
                         setIsProcessing(false);
                         return;
                     }
@@ -131,7 +141,7 @@ export function ImageToPromptDropzone({
                 }
             }
 
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise(r => setTimeout(r, 1500));
         }
 
         setIsProcessing(false);
