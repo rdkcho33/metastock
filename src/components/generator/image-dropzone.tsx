@@ -9,7 +9,7 @@ import { resizeImageFile } from "@/lib/image-helper";
 import { GeminiService } from "@/lib/gemini-service";
 import { GroqService } from "@/lib/groq-service";
 
-import { markKeyExhausted } from "@/app/dashboard/keys/actions";
+
 
 export interface ProcessingFile {
     id: string;
@@ -63,7 +63,7 @@ export function ImageDropzone({
         }
     });
 
-    const getActiveKeyObj = () => apiKeys.find(k => k.status === "active");
+
 
     const processSingleFile = async (
         fileObj: ProcessingFile,
@@ -102,10 +102,10 @@ export function ImageDropzone({
     const handleStartProcess = async () => {
         if (isProcessing) return;
 
-        // Get all active keys
-        const activeKeys = apiKeys.filter(k => k.status === "active");
-        if (activeKeys.length === 0) {
-            alert("Tidak ada API Key aktif. Tambahkan di menu Kelola API Keys.");
+        // Gunakan semua API keys secara berurutan
+        const allKeys = [...apiKeys];
+        if (allKeys.length === 0) {
+            alert("Tidak ada API Key. Tambahkan di menu Kelola API Keys.");
             return;
         }
 
@@ -116,44 +116,31 @@ export function ImageDropzone({
 
         for (const fileObj of pendingFiles) {
             let attemptSuccessful = false;
-            let retryCount = 0;
-            const maxRetries = 2;
 
-            // Try available keys until success or all exhausted
-            while (!attemptSuccessful && currentKeyIndex < activeKeys.length) {
-                const currentKey = activeKeys[currentKeyIndex];
+            // Coba key saat ini, jika limit pindah ke key berikutnya
+            while (!attemptSuccessful && currentKeyIndex < allKeys.length) {
+                const currentKey = allKeys[currentKeyIndex];
                 const result = await processSingleFile(fileObj, currentKey);
 
                 if (result.success) {
                     attemptSuccessful = true;
-                } else if (result.error === "RATE_LIMIT_REACHED" && retryCount < maxRetries) {
-                    retryCount++;
-                    const delay = retryCount * 3000; // 3s, 6s delay
-                    console.warn(`Rate limit hit for key ${currentKey.id}. Retrying in ${delay / 1000}s... (Attempt ${retryCount}/${maxRetries})`);
-                    await new Promise(r => setTimeout(r, delay));
-                    // Will loop again with state: result=null, same key, incremented retryCount
-                } else if (result.error === "QUOTA_EXCEEDED" || (result.error === "RATE_LIMIT_REACHED" && retryCount >= maxRetries)) {
-                    const reason = result.error === "QUOTA_EXCEEDED" ? "Quota Exceeded" : "Rate Limit Persists";
-                    console.warn(`Key index ${currentKeyIndex} exhausted (${reason}). Marking in DB and trying next key...`);
-
-                    // Mark key as exhausted in DB so it won't be picked up on next page refresh
-                    await markKeyExhausted(currentKey.id);
-
+                } else if (result.error === "QUOTA_EXCEEDED") {
+                    // Key sudah limit, pindah ke key berikutnya
+                    console.warn(`Key #${currentKeyIndex + 1} sudah limit. Pindah ke key berikutnya...`);
                     currentKeyIndex++;
-                    retryCount = 0; // Reset retry for new key
 
-                    if (currentKeyIndex >= activeKeys.length) {
-                        alert("Semua API Key yang aktif saat ini telah mencapai limit atau kuota habis.\n\nTips: Silakan tunggu beberapa menit, lalu klik 'Reset Semua Status' di menu Kelola API Keys untuk mencoba kembali.");
+                    if (currentKeyIndex >= allKeys.length) {
+                        alert("Semua API Key sudah mencapai limit hari ini.\n\nLimit biasanya akan di-reset otomatis oleh provider besok.");
                         setIsProcessing(false);
                         return;
                     }
                 } else {
-                    // Other error (not quota/rate), move to next file
-                    attemptSuccessful = true; // Mark as "tried" so we don't loop forever on a broken file
+                    // Error lain (bukan quota), lanjut ke file berikutnya
+                    attemptSuccessful = true;
                 }
             }
 
-            // Jeda antar gambar (ditambah sedikit agar lebih aman dari rate limit)
+            // Jeda antar gambar
             await new Promise(r => setTimeout(r, 1500));
         }
 

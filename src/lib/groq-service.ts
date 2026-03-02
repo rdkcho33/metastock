@@ -71,12 +71,7 @@ KATEGORI ADOBE STOCK:
             });
 
             if (response.status === 429) {
-                const errorData = await response.json().catch(() => ({}));
-                const message = errorData.error?.message || "";
-                if (message.toLowerCase().includes("quota") || message.toLowerCase().includes("exhausted") || message.toLowerCase().includes("limit reached")) {
-                    throw new Error("QUOTA_EXCEEDED");
-                }
-                throw new Error("RATE_LIMIT_REACHED");
+                throw new Error("QUOTA_EXCEEDED");
             }
 
             if (!response.ok) {
@@ -155,12 +150,7 @@ Maksimum 100 kata.`;
             });
 
             if (response.status === 429) {
-                const errorData = await response.json().catch(() => ({}));
-                const message = errorData.error?.message || "";
-                if (message.toLowerCase().includes("quota") || message.toLowerCase().includes("exhausted") || message.toLowerCase().includes("limit reached")) {
-                    throw new Error("QUOTA_EXCEEDED");
-                }
-                throw new Error("RATE_LIMIT_REACHED");
+                throw new Error("QUOTA_EXCEEDED");
             }
 
             if (!response.ok) {
